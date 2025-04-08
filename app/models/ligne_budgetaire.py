@@ -1,6 +1,6 @@
 import enum
 
-from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Enum, Date
+from sqlalchemy import Column, String, INT, DateTime, ForeignKey, Enum, Date
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
@@ -15,4 +15,4 @@ class LigneBudgetaire(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     codeLigne = Column(String, nullable=False)
     nom = Column(String, nullable=False)
-    exerciceBudgetaire = Column(String, nullable=False)
+    exerciceBudgetaire = Column(INT, nullable=False)
