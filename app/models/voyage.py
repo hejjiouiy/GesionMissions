@@ -17,8 +17,8 @@ class Voyage(Base):
     moyen = Column(String)
     dateVoyage = Column(Date)
 
-    createdAt = Column(DateTime, default=datetime.now(timezone.utc))
-    updatedAt = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+    createdAt = Column(DateTime, default=datetime.now())
+    updatedAt = Column(DateTime, default=datetime.now(), onupdate=datetime.now())
 
     ordre_mission_id = Column(UUID(as_uuid=True), ForeignKey("gestion_missions.ordres_mission.id"))
 

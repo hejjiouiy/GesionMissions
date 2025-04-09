@@ -7,11 +7,8 @@ from datetime import datetime, timezone
 import uuid
 
 from app.config.database import Base
-
-class TypeFinancementEnum(str, enum.Enum):
-    PERSONNEL = "PERSONNEL"
-    PARRAINAGE = "PARRAINAGE"
-    INTERNE = "INTERNE"
+from app.models.enums.Enums import TypeFinancementEnum
+from app.models.justificatif import Justificatif
 
 class Financement(Base):
     __tablename__ = "financement"
@@ -22,10 +19,11 @@ class Financement(Base):
     valide = Column(Boolean, default=False)
     devise = Column(String)
 
-    createdAt = Column(DateTime, default=datetime.now(timezone.utc))
-    updatedAt = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+    createdAt = Column(DateTime, default=datetime.now())
+    updatedAt = Column(DateTime, default=datetime.now(), onupdate=datetime.now())
 
     ordre_mission_id = Column(UUID(as_uuid=True), ForeignKey("gestion_missions.ordres_mission.id"), unique=True)
 
     ordre_mission = relationship("OrdreMission", back_populates="financement")
-    justificatifs = relationship("Justificatif", back_populates="financement")
+    justificatifs = relationship("Justificatif", back_populates="financement", cascade="all, delete-orphan")
+    remboursements = relationship("Remboursement", back_populates="financement")

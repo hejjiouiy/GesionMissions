@@ -14,9 +14,9 @@ class Justificatif(Base):
     __table_args__ = {"schema": "gestion_missions"}
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     data = Column(LargeBinary, nullable=False)
-    createdAt = Column(DateTime, default=datetime.now(timezone.utc))
-    modifiedAt = Column(DateTime, default=datetime.now(timezone.utc) , onupdate=datetime.now(timezone.utc))
+    createdAt = Column(DateTime, default=datetime.now())
+    modifiedAt = Column(DateTime, default=datetime.now() , onupdate=datetime.now())
 
     financement_id = Column(UUID(as_uuid=True), ForeignKey("gestion_missions.financement.id"))
 
-    financement = relationship("Financement", back_populates="justificatifs", cascade="all, delete-orphan")
+    financement = relationship("Financement", back_populates="justificatifs")

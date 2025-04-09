@@ -6,7 +6,6 @@ from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 import uuid
 
-from app.models.Mission import EtatMission
 
 from app.config.database import Base
 
@@ -17,8 +16,8 @@ class RapportMission(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     contenu=Column(String, nullable=False)
     data=Column(LargeBinary)
-    createdAt = Column(DateTime, default=datetime.now(timezone.utc))
-    updatedAt = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+    createdAt = Column(DateTime, default=datetime.now())
+    updatedAt = Column(DateTime, default=datetime.now(), onupdate=datetime.now())
 
     ordre_mission_id = Column(UUID(as_uuid=True), ForeignKey("gestion_missions.ordres_mission.id"), unique=True)
     ordre_mission = relationship("OrdreMission", back_populates="rapport")

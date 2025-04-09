@@ -19,8 +19,8 @@ class Remboursement(Base):
     valide = Column(Boolean , default=False)
     dateDemande = Column(Date)
 
-    createdAt = Column(DateTime, default=datetime.now(timezone.utc))
-    updatedAt = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+    createdAt = Column(DateTime, default=datetime.now())
+    updatedAt = Column(DateTime, default=datetime.now(), onupdate=datetime.now())
 
     financement_id = Column(UUID(as_uuid=True), ForeignKey("gestion_missions.financement.id"))
 

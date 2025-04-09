@@ -4,6 +4,10 @@ from sqlalchemy.orm import relationship
 from app.config.database import Base
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
+from app.models.financement import Financement
+from app.models.voyage import Voyage
+from app.models.rapport_mission import RapportMission
+from app.models.hebergement import Hebergement
 
 class OrdreMission(Base):
     __tablename__ = 'ordres_mission'
@@ -13,13 +17,13 @@ class OrdreMission(Base):
     accord_respo = Column(LargeBinary, nullable=False)
     dateDebut =Column(Date)
     dateFin =Column(Date)
-    createdAt=Column(DateTime, default=datetime.now(timezone.utc))
-    updatedAt=Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+    createdAt=Column(DateTime, default=datetime.now())
+    updatedAt=Column(DateTime, default=datetime.now(), onupdate=datetime.now())
 
     user_id=Column(UUID(as_uuid=True))
     mission_id=Column(UUID(as_uuid=True), ForeignKey('gestion_missions.missions.id'))
 
-    mission = relationship("Mission", back_populates="ordres_mission", cascade="all, delete-orphan")
+    mission = relationship("Mission", back_populates="ordres_mission")
     financement = relationship("Financement", back_populates="ordre_mission",uselist=False, cascade="all, delete-orphan")
     voyages = relationship("Voyage", back_populates="ordre_mission", cascade="all, delete-orphan")
     rapport = relationship("RapportMission", back_populates="ordre_mission", cascade="all, delete")
