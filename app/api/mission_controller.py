@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.repositories import mission_repo
 from app.schemas.mission_schema import MissionCreate, MissionOut
@@ -8,9 +8,25 @@ from dependencies import get_db
 
 router = APIRouter(prefix="/mission", tags=["Missions"])
 
-@router.get("/")
-async def get_mission( db: AsyncSession = Depends(get_db)):
-    return await mission_repo.get_missions(db)
+@router.get("/home")
+async def get_mission(request:Request, db: AsyncSession = Depends(get_db)):
+    user_id = request.headers.get("x-user-id")
+    user_email = request.headers.get("x-user-email")
+    user_roles = request.headers.get("x-user-roles")
+
+    print("User ID:", user_id)
+    print("User Email:", user_email)
+    print("User Roles:", user_roles)
+
+    res = await mission_repo.get_missions(db)
+    return {
+        "user": {
+            "id": user_id,
+            "email": user_email,
+            "roles": user_roles
+        },
+        "missions": res
+    }
 
 @router.post("/createMission", response_model=MissionOut)
 async def create_mission(mission : MissionCreate, db: AsyncSession = Depends(get_db)):
