@@ -49,6 +49,11 @@ async def run_migrations_online() -> None:
             context.configure(
                 connection=connection,
                 target_metadata=target_metadata,
+                version_table="alembic_version_mission",  # 🔥 custom version table
+                version_table_schema="gestion_missions",  # 🔥 schema-specific
+                include_schemas=True,
+                compare_type=True,
+                compare_server_default=True,
             )
             with context.begin_transaction():
                 context.run_migrations()

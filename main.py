@@ -31,7 +31,7 @@ for router in routers:
 async def on_startup():
     await create_tables()
 
-@app.get("/home")
+@app.patch("/home")
 async def root():
     return {"message": "Hello World"}
 
