@@ -12,7 +12,6 @@ class MissionCreate(BaseModel):
     details:Optional[str]
     pays:str
     ville:str
-    etat:EtatMission
     budgetPrevu:float
 
 class MissionOut(MissionCreate):

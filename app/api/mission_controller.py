@@ -13,7 +13,7 @@ async def get_mission(request:Request, db: AsyncSession = Depends(get_db)):
     user_id = request.headers.get("x-user-id")
     user_email = request.headers.get("x-user-email")
     user_roles = request.headers.get("x-user-roles")
-
+    user_fullName = request.headers.get("x-user-name")
     print("User ID:", user_id)
     print("User Email:", user_email)
     print("User Roles:", user_roles)

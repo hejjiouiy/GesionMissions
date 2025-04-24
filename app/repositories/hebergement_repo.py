@@ -2,6 +2,8 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
+
 from app.models.hebergement import Hebergement
 from app.schemas.hebergement_schema import HebergementCreate
 
@@ -13,7 +15,10 @@ async def create_hebergement(db: AsyncSession, hebergement: HebergementCreate):
     return db_hebergement
 
 async def get_hebergement_by_id(db: AsyncSession, hebergement_id: UUID):
-    result = await db.execute(select(Hebergement).where(Hebergement.id == hebergement_id))
+    result = await db.execute(select(Hebergement)
+                              .where(Hebergement.id == hebergement_id)
+                              .options(selectinload(Hebergement.ordre_mission))
+                              )
     return result.scalar_one_or_none()
 
 async def get_hebergements(db: AsyncSession, skip: int = 0, limit: int =100):

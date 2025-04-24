@@ -2,6 +2,8 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
+
 from app.models.voyage import Voyage
 from app.schemas.voyage_schema import VoyageCreate
 
@@ -13,11 +15,11 @@ async def create_voyage(db: AsyncSession, voyage: VoyageCreate):
     return db_voyage
 
 async def get_voyage_by_id(db: AsyncSession, voyage_id: UUID):
-    result = await db.execute(select(Voyage).where(Voyage.id == voyage_id))
+    result = await db.execute(select(Voyage).where(Voyage.id == voyage_id).options(selectinload(Voyage.ordre_mission)))
     return result.scalar_one_or_none()
 
 async def get_voyages(db: AsyncSession, skip: int = 0, limit: int =100):
-    result = await db.execute(select(Voyage).offset(skip).limit(limit))
+    result = await db.execute(select(Voyage).options(selectinload(Voyage.ordre_mission)).offset(skip).limit(limit))
     return result.scalars().all()
 
 async def delete_voyage(db: AsyncSession, voyage_id: UUID):

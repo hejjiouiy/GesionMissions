@@ -2,6 +2,8 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
+
 from app.models.financement import Financement
 from app.schemas.financement_schema import FinancementCreate
 
@@ -13,7 +15,9 @@ async def create_financement(db: AsyncSession, financement: FinancementCreate):
     return db_financement
 
 async def get_financement_by_id(db: AsyncSession, financement_id: UUID):
-    result = await db.execute(select(Financement).where(Financement.id == financement_id))
+    result = await db.execute(select(Financement).
+                              where(Financement.id == financement_id).
+                              options(selectinload(Financement.ordre_mission)))
     return result.scalar_one_or_none()
 
 async def get_financements(db: AsyncSession, skip: int = 0, limit: int =100):

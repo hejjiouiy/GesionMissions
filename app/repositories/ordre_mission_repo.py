@@ -2,6 +2,8 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
+
 from app.models.ordre_mission import OrdreMission
 from app.schemas.ordre_mission_schema import OrdreMissionCreate
 
@@ -15,11 +17,19 @@ async def create_ordre(db: AsyncSession, ordre_mission: OrdreMissionCreate, file
     return db_ordre_mission
 
 async def get_ordre_by_id(db: AsyncSession, ordre_id: UUID):
-    result = await db.execute(select(OrdreMission).where(OrdreMission.id == ordre_id))
+    result = await db.execute(select(OrdreMission).where(OrdreMission.id == ordre_id).options(
+            selectinload(OrdreMission.mission),
+            selectinload(OrdreMission.financement),
+        selectinload(OrdreMission.rapport)
+        ))
     return result.scalar_one_or_none()
 
 async def get_ordres(db: AsyncSession, skip: int = 0, limit: int =100):
-    result = await db.execute(select(OrdreMission).offset(skip).limit(limit))
+    result = await db.execute(select(OrdreMission).options(
+            selectinload(OrdreMission.mission),
+            selectinload(OrdreMission.financement),
+        selectinload(OrdreMission.rapport)
+        ).offset(skip).limit(limit))
     return result.scalars().all()
 
 async def delete_ordre(db: AsyncSession, ordre_mission_id: UUID):

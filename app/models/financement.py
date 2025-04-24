@@ -14,7 +14,7 @@ class Financement(Base):
     __tablename__ = "financement"
     __table_args__ = {"schema": "gestion_missions"}
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    type = Column(Enum(TypeFinancementEnum), nullable=False)
+    type = Column(Enum(TypeFinancementEnum, name='typefinancement',schema='gestion_missions', create_type=False), nullable=False)
     details = Column(String)
     valide = Column(Boolean, default=False)
     devise = Column(String)

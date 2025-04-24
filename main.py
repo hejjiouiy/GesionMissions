@@ -11,6 +11,7 @@ from app.api.hebergement_controller import router as hebergement_router
 from app.api.ligne_budgetaire_controller import router as ligne_budgetaire_router
 from app.api.remboursement_controller import router as remboursement_router
 from app.api.voyage_controller import router as voyage_router
+from app.api.historique_validation_controller import router as historique_validation_router
 from app.middleware.jwt_check import VerifyInternalJWTMiddleware
 
 app = FastAPI()
@@ -21,7 +22,7 @@ app.add_middleware(
 app.add_middleware(VerifyInternalJWTMiddleware)
 
 routers = [mission_router, order_router, rapport_router, financement_router, justificatif_router,
-           hebergement_router, ligne_budgetaire_router,remboursement_router,voyage_router]
+           hebergement_router, ligne_budgetaire_router,remboursement_router, voyage_router, historique_validation_router]
 
 for router in routers:
     app.include_router(router)

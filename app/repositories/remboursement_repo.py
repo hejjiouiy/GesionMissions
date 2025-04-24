@@ -2,6 +2,8 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
+
 from app.models.remboursement import Remboursement
 from app.schemas.remboursement_schema import RemboursementCreate
 
@@ -13,7 +15,10 @@ async def create_remboursement(db: AsyncSession, remboursement: RemboursementCre
     return db_remboursement
 
 async def get_remboursement_by_id(db: AsyncSession, remboursement_id: UUID):
-    result = await db.execute(select(Remboursement).where(Remboursement.id == remboursement_id))
+    result = await db.execute(select(Remboursement)
+                              .where(Remboursement.id == remboursement_id)
+                              .options(selectinload(Remboursement.financement))
+                              )
     return result.scalar_one_or_none()
 
 async def get_remboursements(db: AsyncSession, skip: int = 0, limit: int =100):

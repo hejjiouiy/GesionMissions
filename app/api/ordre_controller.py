@@ -1,19 +1,39 @@
 from datetime import date
+from io import BytesIO
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Form, Response
+from fastapi import APIRouter,Request, Depends, HTTPException, status, File, UploadFile, Form, Response
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.responses import StreamingResponse
 
+from app.models.enums.Enums import EtatMission
 from app.models.ordre_mission import OrdreMission
 from app.repositories import ordre_mission_repo
+from app.schemas.historique_validation_schema import HistoriqueValidationCreate
 from app.schemas.ordre_mission_schema import OrdreMissionCreate, OrderMissionOut
+from app.repositories import historique_validation_repo
 from dependencies import get_db
+import magic
 
 router = APIRouter(prefix="/order", tags=["Orders"])
 
 @router.get("/")
 async def get_ordres( db: AsyncSession = Depends(get_db)):
-    return await ordre_mission_repo.get_ordres(db)
+    orders = await ordre_mission_repo.get_ordres(db)
+    return [
+        {
+            "id": j.id,
+            "etat demande": j.etat,
+            "Debut": j.dateDebut,
+            "Fin": j.dateFin,
+            "User" : j.user_id,
+            "mission" : j.mission,
+            "financement": j.financement,
+            "rapport" : j.rapport,
+            "accord de Responsable": f"/file/{j.id}/download"
+        } for j in orders
+    ]
+
 
 @router.post("/add", response_model=OrderMissionOut)
 async def create_ordre(
@@ -33,17 +53,21 @@ async def create_ordre(
     file_data = await file.read() if file else None
     return await ordre_mission_repo.create_ordre(db, ordre, file_data)
 
-@router.get("/file/{ordre_id}")
+@router.get("/file/{ordre_id}/download")
 async def download_file(ordre_id: UUID, db: AsyncSession = Depends(get_db)):
-    ordre = await db.get(OrdreMission, ordre_id)
+    ordre = await ordre_mission_repo.get_ordre_by_id(db, ordre_id)
     if ordre is None or ordre.accord_respo is None:
         raise HTTPException(status_code=404, detail="File not found")
 
-    return Response(
-        content=ordre.accord_respo,
-        media_type="application/octet-stream",
-        headers={"Content-Disposition": f"attachment; filename=mission_{ordre_id}.pdf"}
-    )
+    mime = magic.Magic(mime=True)
+    file_mime_type = mime.from_buffer(bytes(ordre.accord_respo))
+    extension = file_mime_type.split('/')[-1]
+
+    return StreamingResponse(BytesIO(ordre.accord_respo),
+                             media_type=file_mime_type,
+                             headers={
+                                 "Content-Disposition": f"attachment; filename=ordre_{ordre_id}.{extension}"
+                             })
 
 
 
@@ -68,3 +92,76 @@ async def delete_ordre_mission(
         raise HTTPException(status_code=404, detail="Ordre de mission non trouvé")
 
     return db_ordre_mission
+
+
+@router.get("/etat-update/{ordre_mission_id}")
+async def update_etat(request: Request, ordre_mission_id: UUID, db: AsyncSession = Depends(get_db)):
+    user_id = request.headers.get("x-user-id")
+    user_roles = request.headers.get("x-user-roles", "")
+
+    if not user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Utilisateur non authentifié")
+
+
+    db_ordre_mission = await ordre_mission_repo.get_ordre_by_id(db, ordre_mission_id)
+    if not db_ordre_mission:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ordre de mission non existant")
+
+    try:
+        match db_ordre_mission.etat:
+            case EtatMission.OUVERTE:
+                if str(db_ordre_mission.user_id) == user_id:
+                    db_ordre_mission.etat = EtatMission.EN_ATTENTE
+                else:
+                    raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Seul le créateur peut soumettre la mission")
+
+            case EtatMission.EN_ATTENTE:
+                if "RH" in user_roles:
+                    db_ordre_mission.etat = EtatMission.VALIDEE_HIERARCHIQUEMENT
+                else:
+                    raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Rôle RH requis pour cette étape")
+
+            case EtatMission.VALIDEE_HIERARCHIQUEMENT:
+                if "CG" in user_roles:
+                    db_ordre_mission.etat = EtatMission.VALIDEE_BUDGETAIREMENT
+                else:
+                    raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Rôle CG requis pour validation budgétaire")
+
+            case EtatMission.VALIDEE_BUDGETAIREMENT:
+                if "CG" in user_roles:
+                    db_ordre_mission.etat = EtatMission.APPROUVEE
+                else:
+                    raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Rôle CG requis pour approbation finale")
+
+            case _:
+                raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE, detail="Transition d'état invalide")
+
+        await db.commit()
+        await db.refresh(db_ordre_mission)
+        db_hv = HistoriqueValidationCreate(
+            user_id=UUID(user_id),
+            role=user_roles,
+            ordre_mission_id=ordre_mission_id,
+            etat=db_ordre_mission.etat
+        )
+        await historique_validation_repo.create_historiqueValidation(db, db_hv)
+
+        return {
+            "id": db_ordre_mission.id,
+            "financement": db_ordre_mission.financement,
+            "Debut": db_ordre_mission.dateDebut,
+            "Fin": db_ordre_mission.dateFin,
+            "etat de mission": db_ordre_mission.etat,
+            "User": db_ordre_mission.user_id,
+            "mission": db_ordre_mission.mission,
+            "rapport": db_ordre_mission.rapport,
+            "accord de Responsable": f"/file/{db_ordre_mission.id}/download",
+        }
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Erreur serveur: {str(e)}")
+
+
+

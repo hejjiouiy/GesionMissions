@@ -2,6 +2,8 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
+
 from app.models.justificatif import Justificatif
 from app.schemas.justificatif_schema import JustificatifCreate
 
@@ -17,11 +19,14 @@ async def get_justificatif_by_id(db: AsyncSession, justificatif_id: UUID):
     return result.scalar_one_or_none()
 
 async def get_justificatifs(db: AsyncSession, skip: int = 0, limit: int =100):
-    result = await db.execute(select(Justificatif).offset(skip).limit(limit))
+    result = await db.execute(select(Justificatif).options(selectinload(Justificatif.financement)).offset(skip).limit(limit))
     return result.scalars().all()
 
 async def delete_justificatif(db: AsyncSession, justificatif_id: UUID):
-    result = await db.execute(select(Justificatif).where(Justificatif.id == justificatif_id))
+    result = await db.execute(select(Justificatif)
+                              .where(Justificatif.id == justificatif_id)
+                              .options(selectinload(Justificatif.financement))
+                              )
     justificatif = result.scalar_one_or_none()
     if justificatif:
         await db.delete(justificatif)

@@ -10,7 +10,17 @@ router = APIRouter(prefix="/voyage", tags=["Voyages"])
 
 @router.get("/")
 async def get_voyages( db: AsyncSession = Depends(get_db)):
-    return await voyage_repo.get_voyages(db)
+    voyages = await voyage_repo.get_voyages(db)
+    return [
+        {
+            'id' : voyage.id,
+            'destination' : voyage.destination,
+            'moyen' : voyage.moyen,
+            'date de depart' : voyage.dateVoyage,
+            'ordre de mission' : voyage.ordre_mission.id,
+            'creer le' : voyage.createdAt,
+        } for voyage in voyages
+    ]
 
 @router.post("/add", response_model=VoyageOut)
 async def create_voyage(voyage : VoyageCreate, db: AsyncSession = Depends(get_db)):

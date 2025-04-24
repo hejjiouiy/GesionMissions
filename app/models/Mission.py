@@ -1,3 +1,4 @@
+from pydantic.v1.schema import schema
 from sqlalchemy import Column, String, Float, Enum, DateTime, ForeignKey
 
 from sqlalchemy.dialects.postgresql import UUID
@@ -17,12 +18,11 @@ class Mission(Base):
     __tablename__ = 'missions'
     __table_args__ = {"schema": "gestion_missions"}
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    type = Column(Enum(TypeMission))
+    type = Column(Enum(TypeMission, name='typemission',schema='gestion_missions', create_type=False))
     destination=Column(String, nullable=False)
     details=Column(String, nullable=False)
     pays=Column(String, nullable=False)
     ville=Column(String, nullable=False)
-    etat=Column(Enum(EtatMission))
     budgetPrevu=Column(Float, nullable=False)
     createdAt=Column(DateTime, default=datetime.now())
     updatedAt=Column(DateTime, default=datetime.now(), onupdate=datetime.now())

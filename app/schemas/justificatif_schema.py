@@ -6,7 +6,7 @@ from uuid import UUID
 class JustificatifCreate(BaseModel):
     financement_id:UUID
 
-class JustificatifOut(BaseModel):
+class JustificatifOut(JustificatifCreate):
     id: UUID
     createdAt: datetime
     modifiedAt:Optional[datetime]

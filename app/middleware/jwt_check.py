@@ -6,6 +6,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 SECRET = os.getenv("INTERNAL_JWT_SECRET")
+if not SECRET:
+    raise ValueError("INTERNAL_JWT_SECRET environment variable is missing.")
+
 
 class VerifyInternalJWTMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):

@@ -8,7 +8,9 @@ class TypeMission(str, enum.Enum):
 class EtatMission(str, enum.Enum):
     OUVERTE="Ouverte"
     EN_ATTENTE="En attente"
-    VALIDEE="Validee"
+    VALIDEE_HIERARCHIQUEMENT="Validee Hierarchiquement"
+    VALIDEE_BUDGETAIREMENT="Validee budgetairement"
+    APPROUVEE="Approuvee"
     REFUSEE="Refusee"
 
 class TypeFinancementEnum(str, enum.Enum):

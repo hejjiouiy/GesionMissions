@@ -12,7 +12,7 @@ from app.config.database import engine
 from app.config.database import Base
 from app.models import (
     Mission, ordre_mission, financement, hebergement, ligne_budgetaire,
-    rapport_mission, remboursement, justificatif, voyage
+    rapport_mission, remboursement, justificatif, voyage, HistoriqueValidation
 )
 
 config = context.config
@@ -54,6 +54,7 @@ async def run_migrations_online() -> None:
                 include_schemas=True,
                 compare_type=True,
                 compare_server_default=True,
+
             )
             with context.begin_transaction():
                 context.run_migrations()
