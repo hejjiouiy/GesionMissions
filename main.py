@@ -19,7 +19,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=['http://localhost:8000/']
 )
-app.add_middleware(VerifyInternalJWTMiddleware)
+#app.add_middleware(VerifyInternalJWTMiddleware)
 
 routers = [mission_router, order_router, rapport_router, financement_router, justificatif_router,
            hebergement_router, ligne_budgetaire_router,remboursement_router, voyage_router, historique_validation_router]
@@ -32,7 +32,7 @@ for router in routers:
 async def on_startup():
     await create_tables()
 
-@app.patch("/home")
+@app.post("/home")
 async def root():
     return {"message": "Hello World"}
 
