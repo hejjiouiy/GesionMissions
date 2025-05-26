@@ -4,7 +4,14 @@ from typing import Optional
 from uuid import UUID
 
 class RapportCreate(BaseModel):
-    contenu:str
+    objective:str
+    proceedings:str
+    resultAchieved:str
+    nextStep:str
+    keyContact:str
+    interlocutors:str
+    difficulties:str
+    recommendation:str
     ordre_mission_id: UUID
 
 class RapportOut(RapportCreate):
