@@ -11,7 +11,7 @@ class RapportCreate(BaseModel):
     keyContact:str
     interlocutors:str
     difficulties:str
-    recommendation:str
+    recommendations:str
     ordre_mission_id: UUID
 
 class RapportOut(RapportCreate):

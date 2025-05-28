@@ -16,6 +16,8 @@ async def create_ordre(db: AsyncSession, ordre_mission: OrdreMissionCreate, file
     await db.refresh(db_ordre_mission)
     return db_ordre_mission
 
+
+
 async def get_ordre_by_id(db: AsyncSession, ordre_id: UUID):
     result = await db.execute(select(OrdreMission).where(OrdreMission.id == ordre_id).options(
             selectinload(OrdreMission.mission),

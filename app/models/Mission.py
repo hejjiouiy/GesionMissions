@@ -18,6 +18,7 @@ class Mission(Base):
     __tablename__ = 'missions'
     __table_args__ = {"schema": "gestion_missions"}
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    titre = Column(String)
     type = Column(Enum(TypeMission, name='typemission',schema='gestion_missions', create_type=False))
     destination=Column(String, nullable=False)
     details=Column(String, nullable=False)
