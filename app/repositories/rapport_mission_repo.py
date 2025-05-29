@@ -40,7 +40,7 @@ async def update_rapport_mission(db: AsyncSession, rapport_mission_id: UUID, rap
     result = await db.execute(select(RapportMission).where(RapportMission.id == rapport_mission_id))
     db_rapport_mission = result.scalar_one_or_none()
     if db_rapport_mission is None:
-        return None;
+        return None
 
     for key, value in rapport_mission.dict(exclude_unset=True).items():
         setattr(db_rapport_mission, key, value)
@@ -48,3 +48,12 @@ async def update_rapport_mission(db: AsyncSession, rapport_mission_id: UUID, rap
     await db.commit()
     await db.refresh(db_rapport_mission)
     return db_rapport_mission
+
+async def validate_rapport_mission(db: AsyncSession, rapport_mission_id: UUID):
+    result = await get_rapport_by_id(db, rapport_mission_id)
+    if result is None:
+        return None
+    result.isValid = True
+    await db.commit()
+    await db.refresh(result)
+    return result

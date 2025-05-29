@@ -31,6 +31,7 @@ async def get_rapports(db: AsyncSession = Depends(get_db)):
             "difficulties": rapport.difficulties,
             "recommendations": rapport.recommendations,
             "next Step": rapport.nextStep,
+            "isValid" : rapport.isValid,
             "ordre_mission": {
                 "id": rapport.ordre_mission.id,
                 "debut": rapport.ordre_mission.dateDebut,
@@ -41,7 +42,7 @@ async def get_rapports(db: AsyncSession = Depends(get_db)):
                 "createdAt": rapport.ordre_mission.createdAt,
                 "updatedAt": rapport.ordre_mission.updatedAt,
             } if rapport.ordre_mission else None,
-            "rapport": f"/rapport/{rapport.id}/download"
+            "rapport": f"/rapport/download/{rapport.id}"
 
         } for rapport in rapports
     ]
@@ -87,6 +88,12 @@ async def delete_rapport(
 
     return db_rapport_mission
 
+@router.put("/validate/{rapport_mission_id}", response_model=RapportOut)
+async def validate_rapport(rapport_mission_id: UUID, db: AsyncSession = Depends(get_db)):
+    db_rapport = await rapport_mission_repo.validate_rapport_mission(db, rapport_mission_id)
+    if db_rapport is None:
+        raise HTTPException(status_code=404, detail="Rapport de mission non trouve")
+    return db_rapport
 
 @router.get("/download/{rapport_mission_id}")
 async def download_rapport(rapport_mission_id: UUID, db: AsyncSession = Depends(get_db)):
@@ -350,12 +357,15 @@ async def download_rapport(rapport_mission_id: UUID, db: AsyncSession = Depends(
     doc.build(story)
 
     buffer.seek(0)
+    filename = "RapportMission_" + (db_mission.titre or "") + "_" + datetime.datetime.now().strftime(
+        "%Y%m%d%H%M%S") + ".pdf"
 
     return StreamingResponse(
         io.BytesIO(buffer.getvalue()),
         media_type="application/pdf",
         headers={
-            "Content-Disposition": "attachment; filename=howari-RapportActivites.pdf",
+            "Content-Disposition": f"attachment; filename={filename}",
             "Content-Length": str(len(buffer.getvalue()))
         }
     )
+

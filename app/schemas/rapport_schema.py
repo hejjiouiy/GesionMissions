@@ -13,6 +13,7 @@ class RapportCreate(BaseModel):
     difficulties:str
     recommendations:str
     ordre_mission_id: UUID
+    isValid:bool
 
 class RapportOut(RapportCreate):
     id: UUID

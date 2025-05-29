@@ -22,6 +22,7 @@ class RapportMission(Base):
     interlocutors = Column(String)
     difficulties = Column(String)
     recommendations = Column(String)
+    isValid = Column(Boolean, default=False)
     createdAt = Column(DateTime, default=datetime.now)
     updatedAt= Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
