@@ -35,6 +35,12 @@ async def get_ordres( db: AsyncSession = Depends(get_db)):
         } for j in orders
     ]
 
+@router.get("/{order_id}", response_model=OrderMissionOut)
+async def get_ordre( order_id: UUID, db: AsyncSession = Depends(get_db)):
+    order = await ordre_mission_repo.get_ordre_by_id( db,order_id)
+    if order is None:
+        raise HTTPException(status_code=404, detail=f"Ordre {order_id} not found")
+    return order
 
 @router.post("/add", response_model=OrderMissionOut)
 async def create_ordre(

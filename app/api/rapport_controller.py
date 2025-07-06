@@ -1,7 +1,7 @@
 import datetime
 from uuid import UUID
 import io
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.repositories import rapport_mission_repo, mission_repo
 from app.schemas.rapport_schema import RapportCreate, RapportOut
@@ -13,9 +13,11 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
+from app.services.user_service import SimpleUserService, get_current_user_token
 
 router = APIRouter(prefix="/rapport", tags=["Rapport"])
 
+user_service = SimpleUserService()
 
 @router.get("/")
 async def get_rapports(db: AsyncSession = Depends(get_db)):
@@ -96,7 +98,7 @@ async def validate_rapport(rapport_mission_id: UUID, db: AsyncSession = Depends(
     return db_rapport
 
 @router.get("/download/{rapport_mission_id}")
-async def download_rapport(rapport_mission_id: UUID, db: AsyncSession = Depends(get_db)):
+async def download_rapport(request:Request,rapport_mission_id: UUID, db: AsyncSession = Depends(get_db)):
     buffer = io.BytesIO()
 
     db_rapport = await rapport_mission_repo.get_rapport_by_id(db, rapport_mission_id)
@@ -104,6 +106,10 @@ async def download_rapport(rapport_mission_id: UUID, db: AsyncSession = Depends(
         raise HTTPException(status_code=404, detail="Rapport non trouvé")
 
     db_mission = await mission_repo.get_mission_by_id(db, db_rapport.ordre_mission.mission_id)
+    current_token = get_current_user_token(request)
+    user = await user_service.get_user_by_id(db_rapport.ordre_mission.user_id,current_token)
+    print(user)
+
 
     if db_mission is None:
         raise HTTPException(status_code=404, detail="Mission associée non trouvée")
@@ -256,13 +262,18 @@ async def download_rapport(rapport_mission_id: UUID, db: AsyncSession = Depends(
     ]))
 
     nom_field = Paragraph("<b>Nom :</b>", field_style)
-    nom_value = Paragraph("EL Hejjioui", normal_style)
+    nom_value = Paragraph(user.get("nom", "Non spécifié"), normal_style)  # ✅
+
     prenom_field = Paragraph("<b>Prénom :</b>", field_style)
-    prenom_value = Paragraph("Youssef", normal_style)
+    prenom_value = Paragraph(user.get("prenom", "Non spécifié"), normal_style)  # ✅
+
+    email_field = Paragraph("<b>E-mail :</b>", field_style)
+    email_value = Paragraph(user.get("email", "Non spécifié"), normal_style)  # ✅
 
     personal_data = [
         [nom_field, nom_value],
-        [prenom_field, prenom_value]
+        [prenom_field, prenom_value],
+        [email_field, email_value]
     ]
 
     personal_table = Table(personal_data, colWidths=[5 * cm, 11 * cm])
@@ -368,4 +379,11 @@ async def download_rapport(rapport_mission_id: UUID, db: AsyncSession = Depends(
             "Content-Length": str(len(buffer.getvalue()))
         }
     )
+
+@router.post("/validate-report/{reportId}", response_model=RapportOut)
+async def validate_report(reportId: UUID, db: AsyncSession = Depends(get_db)):
+    rapport_dict = await rapport_mission_repo.validate_rapport_mission(db, rapport_mission_id=reportId)
+    if not rapport_dict:
+        raise HTTPException(status_code=404, detail="Rapport non trouvé")
+    return RapportOut(**rapport_dict)
 

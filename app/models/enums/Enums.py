@@ -11,6 +11,7 @@ class EtatMission(str, enum.Enum):
     VALIDEE_HIERARCHIQUEMENT="Validee Hierarchiquement"
     VALIDEE_BUDGETAIREMENT="Validee budgetairement"
     APPROUVEE="Approuvee"
+    CLOTUREE="Cloturee"
     REFUSEE="Refusee"
 
 class TypeFinancementEnum(str, enum.Enum):
