@@ -1,3 +1,4 @@
+from datetime import date, timedelta
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,6 +17,56 @@ async def create_ordre(db: AsyncSession, ordre_mission: OrdreMissionCreate, file
     await db.refresh(db_ordre_mission)
     return db_ordre_mission
 
+async def create_ordre_with_verification(db: AsyncSession, ordre_mission: OrdreMissionCreate, file_data : bytes = None):
+    result = await db.execute(select(OrdreMission).where(
+        OrdreMission.user_id == ordre_mission.user_id
+    ).options(
+        selectinload(OrdreMission.rapport)
+    ))
+    old_user_orders = result.scalars().all()
+
+    cutoff_date = date.today() - timedelta(days=15)
+
+    for old_user_order in old_user_orders:
+        print("*************************************")
+        print("*************************************")
+        print("*************************************")
+        print(cutoff_date.isoformat())
+        print("*************************************")
+        print("*************************************")
+        print("*************************************")
+        print(old_user_order.dateFin.isoformat())
+        print("*************************************")
+        print("*************************************")
+        print("*************************************")
+        print(old_user_order.id)
+        print("*************************************")
+        print("*************************************")
+        print(not old_user_order.rapport)
+        print("*************************************")
+        if(old_user_order.dateFin < cutoff_date and not old_user_order.rapport):
+            return {
+                "error": "Service Unavailable",
+                "message": "Please upload reports for your old missions before creating a new one"
+            }
+
+    db_ordre_mission = OrdreMission(**ordre_mission.dict())
+    if file_data is not None:
+        db_ordre_mission.accord_respo = file_data
+    db.add(db_ordre_mission)
+    await db.commit()
+    await db.refresh(db_ordre_mission)
+    return db_ordre_mission
+
+
+
+    db_ordre_mission = OrdreMission(**ordre_mission.dict())
+    if file_data is not None:
+        db_ordre_mission.accord_respo = file_data
+    db.add(db_ordre_mission)
+    await db.commit()
+    await db.refresh(db_ordre_mission)
+    return db_ordre_mission
 
 
 async def get_ordre_by_id(db: AsyncSession, ordre_id: UUID):

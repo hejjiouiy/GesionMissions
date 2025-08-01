@@ -42,7 +42,7 @@ async def get_ordre( order_id: UUID, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=404, detail=f"Ordre {order_id} not found")
     return order
 
-@router.post("/add", response_model=OrderMissionOut)
+@router.post("/add")
 async def create_ordre(
     dateDebut: date = Form(...),
     dateFin: date = Form(...),
@@ -58,7 +58,7 @@ async def create_ordre(
         user_id=user_id,
     )
     file_data = await file.read() if file else None
-    return await ordre_mission_repo.create_ordre(db, ordre, file_data)
+    return await ordre_mission_repo.create_ordre_with_verification(db, ordre, file_data)
 
 @router.get("/file/{ordre_id}/download")
 async def download_file(ordre_id: UUID, db: AsyncSession = Depends(get_db)):

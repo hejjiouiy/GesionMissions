@@ -53,3 +53,7 @@ async def delete_mission(
         raise HTTPException(status_code=404, detail="Mission non trouvé")
 
     return db_mission
+
+@router.get("/")
+async def get_missions(db: AsyncSession = Depends(get_db)):
+    return await mission_repo.get_missions(db)
