@@ -9,6 +9,7 @@ from app.models.Mission import TypeMission, EtatMission
 class MissionCreate(BaseModel):
     type: TypeMission
     destination:str
+    titre:str
     details:Optional[str]
     pays:str
     ville:str

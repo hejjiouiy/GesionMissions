@@ -76,6 +76,24 @@ async def download_file(ordre_id: UUID, db: AsyncSession = Depends(get_db)):
                                  "Content-Disposition": f"attachment; filename=ordre_{ordre_id}.{extension}"
                              })
 
+@router.get("/user/{user_id}")
+async def get_orders_by_userId(user_id: UUID, db: AsyncSession = Depends(get_db)):
+    orders = await ordre_mission_repo.get_order_by_userId(db, user_id)
+    if orders is None:
+        raise HTTPException(status_code=404, detail="The user has no order yet")
+    return [
+        {
+            "id": j.id,
+            "etat demande": j.etat,
+            "Debut": j.dateDebut,
+            "Fin": j.dateFin,
+            "User": j.user_id,
+            "mission": j.mission,
+            "financement": j.financement,
+            "rapport": j.rapport,
+            "accord de Responsable": f"/file/{j.id}/download"
+        } for j in orders
+    ]
 
 
 @router.put("/update-{ordre_id}", response_model=OrderMissionOut)

@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 
-from app.models.HistoriqueValidation import HistoriqueValidation
+from app.models.historique_validation import HistoriqueValidation
 from app.schemas.historique_validation_schema import HistoriqueValidationCreate
 
 async def create_historiqueValidation(db: AsyncSession, historiqueValidation: HistoriqueValidationCreate):

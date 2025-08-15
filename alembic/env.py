@@ -12,7 +12,7 @@ from app.config.database import engine
 from app.config.database import Base
 from app.models import (
     Mission, ordre_mission, financement, hebergement, ligne_budgetaire,
-    rapport_mission, remboursement, justificatif, voyage, HistoriqueValidation
+    rapport_mission, remboursement, justificatif, voyage, historique_validation
 )
 
 config = context.config

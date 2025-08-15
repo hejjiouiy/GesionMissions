@@ -20,6 +20,9 @@ async def get_missions(db: AsyncSession, skip: int = 0, limit: int =100):
     result = await db.execute(select(Mission).offset(skip).limit(limit))
     return result.scalars().all()
 
+# async def get_upcoming_missions(db: AsyncSession):
+#     result = await db.execute(select(Mission).where(Mission.))
+
 async def delete_mission(db: AsyncSession, mission_id: UUID):
     result = await db.execute(select(Mission).where(Mission.id == mission_id))
     mission = result.scalar_one_or_none()
@@ -40,3 +43,4 @@ async def update_mission(db: AsyncSession, mission_id: UUID, mission: MissionCre
     await db.commit()
     await db.refresh(db_mission)
     return db_mission
+
