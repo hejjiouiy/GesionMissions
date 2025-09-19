@@ -18,6 +18,7 @@ from app.api.historique_validation_controller import router as historique_valida
 from app.api.form_submission import router as submission_router
 from app.middleware.jwt_check import VerifyInternalJWTMiddleware
 from app.middleware.keycloak_token_validation import SimpleKeycloakAuthMiddleware, get_current_user
+from app.api.AnalyticsController import router as analytics_router
 
 app = FastAPI()
 app.add_middleware(
@@ -29,7 +30,7 @@ app.add_middleware(
 #app.add_middleware(VerifyInternalJWTMiddleware)
 
 routers = [submission_router, mission_router, order_router, rapport_router, financement_router, justificatif_router,
-           hebergement_router, ligne_budgetaire_router,remboursement_router, voyage_router, historique_validation_router]
+           hebergement_router, ligne_budgetaire_router,remboursement_router, voyage_router, historique_validation_router, analytics_router]
 
 for router in routers:
     app.include_router(router)

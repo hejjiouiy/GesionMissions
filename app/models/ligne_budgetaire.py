@@ -1,4 +1,5 @@
 import enum
+from codecs import backslashreplace_errors
 
 from sqlalchemy import Column, String, INT, DateTime, ForeignKey, Enum, Date
 from sqlalchemy.dialects.postgresql import UUID
@@ -16,3 +17,5 @@ class LigneBudgetaire(Base):
     codeLigne = Column(String, nullable=False)
     nom = Column(String, nullable=False)
     exerciceBudgetaire = Column(INT, nullable=False)
+
+    ordre_mission = relationship("OrdreMission", back_populates="ligne_budgetaire")

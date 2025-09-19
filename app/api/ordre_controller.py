@@ -1,6 +1,7 @@
 import logging
 from datetime import date
 from io import BytesIO
+from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter,Request, Depends, HTTPException, status, File, UploadFile, Form, Response
@@ -12,6 +13,7 @@ from app.models.ordre_mission import OrdreMission
 from app.repositories import ordre_mission_repo
 from app.schemas.historique_validation_schema import HistoriqueValidationCreate
 from app.schemas.ordre_mission_schema import OrdreMissionCreate, OrderMissionOut
+from app.schemas.validation_data import ValidationData
 from app.repositories import historique_validation_repo
 from dependencies import get_db
 import magic
@@ -119,8 +121,14 @@ async def delete_ordre_mission(
     return db_ordre_mission
 
 
-@router.get("/etat-update/{ordre_mission_id}")
-async def update_etat(request: Request, ordre_mission_id: UUID, db: AsyncSession = Depends(get_db)):
+@router.api_route("/etat-update/{ordre_mission_id}", methods=["GET", "POST"])
+async def update_etat(request: Request, ordre_mission_id: UUID, db: AsyncSession = Depends(get_db),validation_data:Optional[ValidationData]=None):
+    method = request.method
+    if method == "POST" :
+        if validation_data is None:
+            raise HTTPException(status_code=403, detail="Please provide Validation Data")
+
+
     user_id = request.headers.get("x-user-id")
     user_roles = request.headers.get("x-user-roles", "")
 
@@ -130,7 +138,8 @@ async def update_etat(request: Request, ordre_mission_id: UUID, db: AsyncSession
             user_id=user_id,
             user_roles=user_roles,
             ordre_mission_id=ordre_mission_id,
-            db=db
+            db=db,
+            validation_data=validation_data
         )
         return result
     except HTTPException as e:
@@ -140,7 +149,7 @@ async def update_etat(request: Request, ordre_mission_id: UUID, db: AsyncSession
 
 
 # This function contains the core business logic and can be tested separately
-async def process_etat_update(user_id: str, user_roles: str, ordre_mission_id: UUID, db: AsyncSession):
+async def process_etat_update(user_id: str, user_roles: str, ordre_mission_id: UUID, db: AsyncSession, validation_data:Optional[ValidationData]):
     if not user_id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Utilisateur non authentifié")
 
@@ -157,6 +166,7 @@ async def process_etat_update(user_id: str, user_roles: str, ordre_mission_id: U
                 raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Seul le créateur peut soumettre la mission")
         case EtatMission.EN_ATTENTE:
             if "RH" in user_roles:
+
                 db_ordre_mission.etat = EtatMission.VALIDEE_HIERARCHIQUEMENT
             else:
                 raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Rôle RH requis pour cette étape")

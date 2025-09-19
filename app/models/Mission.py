@@ -28,4 +28,4 @@ class Mission(Base):
     createdAt=Column(DateTime, default=datetime.now())
     updatedAt=Column(DateTime, default=datetime.now(), onupdate=datetime.now())
 
-    ordres_mission = relationship("OrdreMission", back_populates="mission")
+    ordres_mission = relationship("OrdreMission", back_populates="mission", cascade="all, delete-orphan")

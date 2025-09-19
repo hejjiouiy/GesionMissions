@@ -13,7 +13,7 @@ class RapportCreate(BaseModel):
     difficulties: Optional[str]
     recommendations: Optional[str]
     ordre_mission_id: UUID
-    isValid:bool
+    isValid:Optional[bool] = False
 
 class RapportOut(RapportCreate):
     id: UUID

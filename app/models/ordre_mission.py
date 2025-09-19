@@ -11,6 +11,7 @@ from app.models.financement import Financement
 from app.models.voyage import Voyage
 from app.models.rapport_mission import RapportMission
 from app.models.hebergement import Hebergement
+from app.models.ligne_budgetaire import LigneBudgetaire
 
 class OrdreMission(Base):
     __tablename__ = 'ordres_mission'
@@ -26,6 +27,7 @@ class OrdreMission(Base):
 
     user_id=Column(UUID(as_uuid=True))
     mission_id=Column(UUID(as_uuid=True), ForeignKey('gestion_missions.missions.id'))
+    ligne_budgetaire_id = Column(UUID(as_uuid=True),ForeignKey('gestion_missions.ligne_budgetaire.id'))
 
     mission = relationship("Mission", back_populates="ordres_mission")
     financement = relationship("Financement", back_populates="ordre_mission",uselist=False, cascade="all, delete-orphan")
@@ -33,3 +35,4 @@ class OrdreMission(Base):
     rapport = relationship("RapportMission", back_populates="ordre_mission", cascade="all, delete")
     hebergements = relationship("Hebergement", back_populates="ordre_mission", cascade="all, delete-orphan")
     historique = relationship("HistoriqueValidation", back_populates="ordre_mission", cascade="all, delete")
+    ligne_budgetaire = relationship("LigneBudgetaire",back_populates="ordre_mission", cascade="all, delete")
