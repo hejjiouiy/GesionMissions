@@ -74,6 +74,20 @@ async def form_submission(
             logger.error(f"Validation errors: {validation_errors}")
             raise HTTPException(status_code=400, detail=validation_errors)
 
+        # **NEW: Check user permissions BEFORE creating anything**
+        logger.info("Checking user permissions before creating mission...")
+        permission_check = await ordre_mission_repo.check_user_can_create_order(db, user_id)
+
+        if "error" in permission_check:
+            logger.warning(f"User {user_id} denied: {permission_check['message']}")
+            raise HTTPException(
+                status_code=400,
+                detail=permission_check["message"],
+                headers={"X-Error-Type": permission_check["error"]}
+            )
+
+        logger.info("User has permission to create order")
+
         # 6. Process file
         logger.info("Processing file...")
         file_data = None
@@ -120,7 +134,7 @@ async def form_submission(
             ordre_mission_create = OrdreMissionCreate(**order_data)
             logger.info("OrdreMissionCreate model created")
 
-            db_ordre_result = await ordre_mission_repo.create_ordre_with_verification(
+            db_ordre_result = await ordre_mission_repo.create_ordre(
                 db, ordre_mission_create, file_data
             )
             logger.info("Order mission creation completed")
@@ -227,3 +241,4 @@ def validate_required_steps(form_data: DataForm) -> list:
         errors.append("Financing details are required when financing is included")
 
     return errors
+

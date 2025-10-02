@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Column, String, ForeignKey, DateTime, Date, LargeBinary, Enum
+from sqlalchemy import Column, String,Float, ForeignKey, DateTime, Date, LargeBinary, Enum
 from sqlalchemy.orm import relationship
 from app.config.database import Base
 import uuid
@@ -24,7 +24,7 @@ class OrdreMission(Base):
     etat=Column(Enum(EtatMission , name='etatmission',schema='gestion_missions', create_type=False), default=EtatMission.OUVERTE)
     createdAt=Column(DateTime, default=datetime.now())
     updatedAt=Column(DateTime, default=datetime.now(), onupdate=datetime.now())
-
+    montant_alloue = Column(Float)
     user_id=Column(UUID(as_uuid=True))
     mission_id=Column(UUID(as_uuid=True), ForeignKey('gestion_missions.missions.id'))
     ligne_budgetaire_id = Column(UUID(as_uuid=True),ForeignKey('gestion_missions.ligne_budgetaire.id'))

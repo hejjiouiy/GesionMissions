@@ -57,3 +57,7 @@ async def delete_mission(
 @router.get("/")
 async def get_missions(db: AsyncSession = Depends(get_db)):
     return await mission_repo.get_missions(db)
+
+@router.get("/last-missions")
+async def get_last_missions(db: AsyncSession = Depends(get_db)):
+    return await mission_repo.get_fresh_missions(db)

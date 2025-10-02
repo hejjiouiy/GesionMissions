@@ -17,6 +17,7 @@ class StepMissionDetails(BaseModel):
     budgetPrevu: Optional[float] = None
     etat: Optional[str] = None
     missionId: Optional[str] = None  # For existing missions
+    dateDebut: Optional[date] = None
 
     @validator('*', pre=True)
     def validate_mission_requirements(cls, v, values):

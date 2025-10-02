@@ -25,6 +25,7 @@ class Mission(Base):
     pays=Column(String, nullable=False)
     ville=Column(String, nullable=False)
     budgetPrevu=Column(Float, nullable=False)
+    dateDebut=Column(DateTime, nullable=False, default=datetime.now())
     createdAt=Column(DateTime, default=datetime.now())
     updatedAt=Column(DateTime, default=datetime.now(), onupdate=datetime.now())
 

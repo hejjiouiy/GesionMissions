@@ -131,7 +131,7 @@ async def get_ordres(db: AsyncSession, skip: int = 0, limit: int =100):
     result = await db.execute(select(OrdreMission).options(
             selectinload(OrdreMission.mission),
             selectinload(OrdreMission.financement),
-        selectinload(OrdreMission.rapport)
+        selectinload(OrdreMission.rapport),
         ).offset(skip).limit(limit))
     return result.scalars().all()
 
@@ -155,3 +155,56 @@ async def update_ordre_mission(db: AsyncSession, ordre_mission_id: UUID, ordre_m
     await db.commit()
     await db.refresh(db_ordre_mission)
     return db_ordre_mission
+
+
+async def check_user_can_create_order(db: AsyncSession, user_id: str):
+    """Check if user can create a new order without creating anything"""
+
+    result = await db.execute(
+        select(OrdreMission)
+        .where(OrdreMission.user_id == user_id)
+        .options(selectinload(OrdreMission.rapport))
+    )
+    old_user_orders = result.scalars().all()
+
+    OPEN_STATES = {
+        EtatMission.OUVERTE,
+        EtatMission.EN_ATTENTE,
+        EtatMission.VALIDEE_HIERARCHIQUEMENT,
+        EtatMission.VALIDEE_BUDGETAIREMENT,
+        EtatMission.APPROUVEE
+    }
+
+    CLOSED_STATES = {
+        EtatMission.CLOTUREE,
+        EtatMission.REFUSEE
+    }
+
+    cutoff_date = date.today() - timedelta(days=15)
+
+    # Check for missing reports
+    closed_without_reports = [
+        order for order in old_user_orders
+        if order.etat in CLOSED_STATES
+           and order.dateFin < cutoff_date
+           and not order.rapport
+    ]
+
+    if closed_without_reports:
+        return {
+            "error": "Missing Reports Required",
+            "message": f"You have {len(closed_without_reports)} completed mission(s) that require reports before submitting new requests."
+        }
+
+    # Check for open orders
+    open_orders = [order for order in old_user_orders if order.etat in OPEN_STATES]
+
+    if open_orders:
+        return {
+            "error": "Active Mission Exists",
+            "message": "You already have an active mission order. Please complete it before creating a new one."
+        }
+
+    # Permission granted
+    return {"success": True}
+

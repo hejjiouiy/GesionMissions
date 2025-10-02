@@ -3,6 +3,8 @@ from typing import Optional
 from uuid import UUID
 from datetime import datetime
 
+from sqlalchemy import DateTime
+
 from app.models.Mission import TypeMission, EtatMission
 
 
@@ -14,6 +16,7 @@ class MissionCreate(BaseModel):
     pays:str
     ville:str
     budgetPrevu:float
+    dateDebut:datetime
 
 class MissionOut(MissionCreate):
     id:UUID

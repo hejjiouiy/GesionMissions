@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,6 +19,20 @@ async def get_mission_by_id(db: AsyncSession, mission_id: UUID):
 
 async def get_missions(db: AsyncSession, skip: int = 0, limit: int =100):
     result = await db.execute(select(Mission).offset(skip).limit(limit))
+    return result.scalars().all()
+
+
+async def get_fresh_missions(db: AsyncSession, skip: int = 0, limit: int = 100):
+    # Calculate the minimum start date (15 days from today)
+    min_start_date = datetime.now() + timedelta(days=15)
+
+    # Query missions that start at least 15 days from now
+    result = await db.execute(
+        select(Mission)
+        .where(Mission.dateDebut >= min_start_date)
+        .offset(skip)
+        .limit(limit)
+    )
     return result.scalars().all()
 
 # async def get_upcoming_missions(db: AsyncSession):
